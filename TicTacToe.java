@@ -1,9 +1,10 @@
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class TicTacToe {
     private String playerOne;
     private String playerTwo;
-    private char[][] gameArr = new char[4][4];
+    private char[][] game_board = new char[4][4];
     private boolean is_valid_input = true;
     private Scanner sc = new Scanner(System.in);
 
@@ -16,8 +17,6 @@ public class TicTacToe {
         display_players_info();
 
         fill_game_with_default_values();
-
-        display_input_guide();
 
         display_game();
 
@@ -34,25 +33,22 @@ public class TicTacToe {
 
             char current_player_symbol = i % 2 == 0 ? 'O' : 'X';
 
-            System.out.println(current_player + "'s turn " + "(" + current_player_symbol + ")" + ":");
+            System.out.println(current_player + " (" + current_player_symbol + "), it's your turn!");
+            System.out.println("Enter the row and column numbers of your move (e.g., 1 2): ");
 
-            int[] input_arr;
+            byte[] input_arr = new byte[2];
 
-            do {
-                // The Below condition is used to not show the message for the very first input
-                if (!is_valid_input) {
-                    System.out.println("Please Enter valid input: ");
-                }
-                input_arr = take_input();
-                validate_input(input_arr);
-            } while (!is_valid_input);
+            take_input_and_validate_input(input_arr);
 
-            gameArr[input_arr[0]][input_arr[1]] = current_player_symbol;
+            byte row = input_arr[0];
+            byte column = input_arr[1];
+
+            game_board[row][column] = current_player_symbol;
 
             display_game();
 
             if (i >= 5) {
-                Boolean have_won = check_for_a_winner(current_player_symbol, input_arr);
+                Boolean have_won = check_for_a_winner(current_player_symbol, row, column);
                 if (have_won) {
                     System.out.println();
                     System.out.println(current_player + " have won the game");
@@ -68,30 +64,34 @@ public class TicTacToe {
         sc.close();
     }
 
+    private void take_input_and_validate_input(byte[] input_arr) {
+        do {
+            take_input(input_arr);
+            validate_input(input_arr[0], input_arr[1]);
+        } while (!is_valid_input);
+    }
+
     private void greet() {
 
         System.out.println("Let's Begin\n");
 
-        System.out.println("First player symbol is X, second player symbol is O\n");
+        System.out.println("Player One is X, Player Two is O\n");
     }
 
-    private boolean check_for_a_winner(char current_player_symbol, int[] input_arr) {
+    private boolean check_for_a_winner(char current_player_symbol, byte row, byte column) {
 
-        int row = input_arr[0];
-        int coloum = input_arr[1];
-
-        if (row == coloum || (row == 1 && coloum == 3) || (row == 3 && coloum == 1)) {
+        if (row == column || (row == 1 && column == 3) || (row == 3 && column == 1)) {
 
             boolean found_in_row = check_in_row(row, current_player_symbol);
             if (!found_in_row) {
 
-                boolean found_in_coloumn = check_in_coloum(coloum, current_player_symbol);
+                boolean found_in_columnn = check_in_column(column, current_player_symbol);
 
-                if (!found_in_coloumn) {
-                    boolean found_in_diagonal = check_in_diagonal(row, coloum, current_player_symbol);
+                if (!found_in_columnn) {
+                    boolean found_in_diagonal = check_in_diagonal(row, column, current_player_symbol);
                     return found_in_diagonal;
                 }
-                return found_in_coloumn;
+                return found_in_columnn;
 
             }
             return found_in_row;
@@ -99,15 +99,15 @@ public class TicTacToe {
         } else {
             boolean found_in_row = check_in_row(row, current_player_symbol);
             if (!found_in_row) {
-                boolean found_in_coloumn = check_in_coloum(coloum, current_player_symbol);
-                return found_in_coloumn;
+                boolean found_in_columnn = check_in_column(column, current_player_symbol);
+                return found_in_columnn;
             }
             return found_in_row;
         }
     }
 
-    private boolean check_in_diagonal(int row, int coloum, char current_player_symbol) {
-        if (row == 2 && coloum == 2) {
+    private boolean check_in_diagonal(byte row, byte column, char current_player_symbol) {
+        if (row == 2 && column == 2) {
             boolean found_in_left_diagonal = check_in_left_diagonal(current_player_symbol);
 
             if (!found_in_left_diagonal) {
@@ -115,7 +115,7 @@ public class TicTacToe {
                 return found_in_right_diagonal;
             }
             return true;
-        } else if (row == coloum) {
+        } else if (row == column) {
             boolean strike_found = check_in_left_diagonal(current_player_symbol);
             return strike_found;
         } else {
@@ -125,8 +125,8 @@ public class TicTacToe {
     }
 
     private boolean check_in_right_diagonal(char current_player_symbol) {
-        for (int i = 1; i <= 3; i++) {
-            if (gameArr[i][gameArr.length - i] != current_player_symbol) {
+        for (byte i = 1; i <= 3; i++) {
+            if (game_board[i][game_board.length - i] != current_player_symbol) {
                 return false;
             }
         }
@@ -134,8 +134,8 @@ public class TicTacToe {
     }
 
     private boolean check_in_left_diagonal(char current_player_symbol) {
-        for (int i = 1; i <= 3; i++) {
-            if (gameArr[i][i] != current_player_symbol) {
+        for (byte i = 1; i <= 3; i++) {
+            if (game_board[i][i] != current_player_symbol) {
                 return false;
             }
         }
@@ -143,18 +143,18 @@ public class TicTacToe {
         return true;
     }
 
-    private boolean check_in_coloum(int coloum, char current_player_symbol) {
-        for (int i = 1; i <= 3; i++) {
-            if (gameArr[i][coloum] != current_player_symbol) {
+    private boolean check_in_column(byte column, char current_player_symbol) {
+        for (byte i = 1; i <= 3; i++) {
+            if (game_board[i][column] != current_player_symbol) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean check_in_row(int row, char current_player_symbol) {
-        for (int i = 1; i <= 3; i++) {
-            if (gameArr[row][i] != current_player_symbol) {
+    private boolean check_in_row(byte row, char current_player_symbol) {
+        for (byte i = 1; i <= 3; i++) {
+            if (game_board[row][i] != current_player_symbol) {
                 return false;
             }
 
@@ -162,22 +162,39 @@ public class TicTacToe {
         return true;
     }
 
-    private void validate_input(int[] input_arr) {
-        int row = input_arr[0];
-        int column = input_arr[1];
-
-        if (row > 0 && column > 0 && row < 4 && column < 4 && gameArr[row][column] == '.') {
+    private void validate_input(byte row, byte column) {
+        // Conditions for valid input
+        if (row > 0 && column > 0 && row < 4 && column < 4 && game_board[row][column] == '.') {
             is_valid_input = true;
             return;
         }
+
+        if (row < 0 || row > 3 || column < 0 || column > 3) {
+            System.out.println("\nInvalid Input, Please enter valid row and column number");
+        } else if (game_board[row][column] != '.') {
+            System.out.println("\nInvalid Input, Cell already Taken");
+        }
+
+        System.out.println("Enter the row and column numbers of your move (e.g., 1 2): ");
+        sc.nextLine();
+
         is_valid_input = false;
     }
 
-    private int[] take_input() {
-        int row = sc.nextInt();
-        int coloum = sc.nextInt();
+    private void take_input(byte[] input_arr) {
+        while (true) {
+            try {
+                input_arr[0] = sc.nextByte();
+                input_arr[1] = sc.nextByte();
+                break;
 
-        return new int[] { row, coloum };
+            } catch (InputMismatchException e) {
+                System.out.println("\nInvalid input, Please enter valid input: ");
+                System.out.println("Enter the row and column numbers of your move (e.g., 1 2): ");
+                sc.nextLine();
+
+            }
+        }
     }
 
     private void assign_player_names() {
@@ -188,14 +205,14 @@ public class TicTacToe {
     }
 
     private void fill_game_with_default_values() {
-        for (int i = 0; i <= 3; i++) {
-            for (int j = 0; j <= 3; j++) {
+        for (byte i = 0; i <= 3; i++) {
+            for (byte j = 0; j <= 3; j++) {
                 if (i == 0 && j == 0) {
-                    gameArr[i][j] = ' ';
+                    game_board[i][j] = ' ';
                 } else if (i == 0 || j == 0) {
-                    gameArr[i][j] = i == 0 ? (char) (j + 48) : (char) (i + 48);
+                    game_board[i][j] = i == 0 ? (char) (j + 48) : (char) (i + 48);
                 } else {
-                    gameArr[i][j] = '.';
+                    game_board[i][j] = '.';
                 }
             }
         }
@@ -209,16 +226,12 @@ public class TicTacToe {
 
     private void display_game() {
         System.out.println();
-        for (int i = 0; i <= 3; i++) {
-            for (int j = 0; j <= 3; j++) {
-                System.out.print(gameArr[i][j] + " ");
+        for (byte i = 0; i <= 3; i++) {
+            for (byte j = 0; j <= 3; j++) {
+                System.out.print(game_board[i][j] + " ");
             }
             System.out.println();
         }
     }
 
-    private void display_input_guide() {
-        System.out.println();
-        System.out.println("Enter co-ordinates like row space column. Ex 2 3");
-    }
 }
