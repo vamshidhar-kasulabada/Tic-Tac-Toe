@@ -39,6 +39,7 @@ public class TicTacToe {
             int[] input_arr;
 
             do {
+                // The Below condition is used to not show the message for the very first input
                 if (!is_valid_input) {
                     System.out.println("Please Enter valid input: ");
                 }
