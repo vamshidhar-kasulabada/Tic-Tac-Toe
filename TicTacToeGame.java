@@ -59,7 +59,7 @@ public class TicTacToeGame {
         }
         if (i == 10) {
             System.out.println();
-            System.out.println("-----Draw-----");
+            System.out.println("|------Draw------|");
         }
         sc.close();
     }
